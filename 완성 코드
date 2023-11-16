@@ -1,0 +1,83 @@
+#include <Servo.h>
+ 
+ int Switch = 8;                                                               //스위치 8번
+ int  echoPin = 4;                                                               //에코  4번
+ int  trigPin = 3;                                                               //트리거 핀 3번
+ int led1=10,led2=11,led3=12;                                                   //LED1 빨강 LED2 파랑 LED3 초록
+ int inputPin = 2;                                                            //적외선센서 2번
+ int pirState = LOW;                                                          //초기상태 움직임 없음
+ int val = 0;                                                                 //센서 신호 판별 변수
+   
+
+
+Servo myServo;
+
+
+void setup()
+{
+                                                   
+  pinMode(Switch,INPUT_PULLUP);                                               // 스위치 등록
+  myServo.attach(6);                                                          //모터 6번에 등록
+  pinMode(2, INPUT);                                                          //적외선 센서 2번
+  pinMode(10, OUTPUT);                                                        //빨강 10번
+  pinMode(11, OUTPUT);                                                        //파랑 11번
+  pinMode(12, OUTPUT);                                                        //초록 12번
+  pinMode(3, OUTPUT);                                                         //트리거 3번
+  pinMode(4, INPUT);                                                          //에코 4번
+   
+}  
+
+
+void loop()
+{
+  val = digitalRead(inputPin);
+
+
+  if(val == HIGH) {                                                   //PIR센서 감지됐을때
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+    unsigned long duration = pulseIn(echoPin, HIGH);
+    float distance = ((float)(340 * duration) / 10000) / 2;                  //거리 계산=(340 * duration) / 10000) / 2
+   
+
+
+    if(distance<20){                                                 //거리가 20cm이하일떄
+     myServo.attach(6);                                             //모터 연결
+     digitalWrite(led3,HIGH);                                       //빨강 켜짐
+     digitalWrite(led1,LOW);
+     digitalWrite(led2,LOW);
+     myServo.write(90);                                             // 모터 90도 회전
+     delay(10);
+    }
+    else{                                                          //그 외
+     digitalWrite(led3,LOW);
+     digitalWrite(led2,HIGH);                                     //초록 켜짐
+     digitalWrite(led1,LOW);
+     myServo.write(180);                                            //모터 0도로 위치
+      delay(10);
+    }  
+  }  
+
+
+ else {                                                         //PIR센서에 감지 안될때
+   digitalWrite(led3,LOW);
+   digitalWrite(led2,HIGH);                                     //초록 켜짐
+   digitalWrite(led1,LOW);
+   myServo.detach();
+ }
+
+
+ if (digitalRead(Switch) == LOW) {                              //스위치 누르면
+   digitalWrite(led3,LOW);
+   digitalWrite(led1,HIGH);                                     //파랑 켜짐
+   digitalWrite(led2,LOW);
+   myServo.write(180);
+   delay(150);
+   myServo.detach();                                            //모터연결해제
+   delay(1000);
+ }
+
+
+}
+
